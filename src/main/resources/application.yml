@@ -4,8 +4,10 @@ server:
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/wafrnalak_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
+    # DB_USERNAME and DB_PASSWORD have no defaults — must be set via environment.
+    # For local dev, activate the 'dev' profile: --spring.profiles.active=dev
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -17,6 +19,12 @@ spring:
         format_sql: true
   application:
     name: wafrnalak-marketplace
+
+# Security
+# insecure-test-mode=false is the safe default for any deployed environment.
+# Set to true ONLY via the dev profile (application-dev.yml) — never in prod.
+security:
+  insecure-test-mode: false
 
 # JWT — will be activated when Firebase auth filter is wired in.
 # JWT_SECRET must be provided via environment variable — no default to prevent

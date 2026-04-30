@@ -1,5 +1,6 @@
 package com.wafrnalak.marketplace.controller;
 
+import com.wafrnalak.marketplace.auth.CustomerAuthContext;
 import com.wafrnalak.marketplace.dto.request.PlaceOrderRequest;
 import com.wafrnalak.marketplace.dto.response.ApiResponse;
 import com.wafrnalak.marketplace.dto.response.OrderResponse;
@@ -26,16 +27,19 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final CustomerAuthContext customerAuthContext;
 
     // -------------------------------------------------------------------------
     // POST /api/orders — Place a new order
+    // Customer identity is derived from auth context (X-Customer-Id header in dev,
+    // Firebase token in prod).
     // -------------------------------------------------------------------------
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> placeOrder(
-            @RequestParam Integer customerId,
             @RequestBody @Valid PlaceOrderRequest request) {
 
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
         OrderResponse response = orderService.placeOrder(customerId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -43,7 +47,7 @@ public class OrderController {
     }
 
     // -------------------------------------------------------------------------
-    // GET /api/orders/{orderId} — Fetch a single order by ID
+    // GET /api/orders/{orderId}
     // -------------------------------------------------------------------------
 
     @GetMapping("/{orderId}")
@@ -79,13 +83,14 @@ public class OrderController {
 
     // -------------------------------------------------------------------------
     // PUT /api/orders/{orderId}/cancel — Cancel an order (customer-initiated)
+    // Customer identity is derived from auth context, not from the request.
     // -------------------------------------------------------------------------
 
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
-            @PathVariable Integer orderId,
-            @RequestParam Integer customerId) {
+            @PathVariable Integer orderId) {
 
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
         OrderResponse response = orderService.cancelOrder(orderId, customerId);
         return ResponseEntity.ok(ApiResponse.success("Order cancelled", response));
     }

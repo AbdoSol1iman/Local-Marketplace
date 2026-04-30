@@ -51,10 +51,22 @@ public class OrderService {
             throw new BusinessException("Order must contain at least one item");
         }
 
-        // 3. Validate every product exists and has sufficient stock (first pass)
+        // 3. Reject duplicate product IDs — OrderItem uses (orderId, productId) as composite PK
+        //    so duplicates would cause a constraint violation or silent overwrite.
+        Set<Integer> seenProductIds = new java.util.HashSet<>();
+        for (OrderItemRequest itemReq : request.getItems()) {
+            if (!seenProductIds.add(itemReq.getProductId())) {
+                throw new BusinessException(
+                    "Duplicate product ID in order: " + itemReq.getProductId() +
+                    ". Combine quantities into a single line item.");
+            }
+        }
+
+        // 4. Acquire pessimistic row-locks and validate stock (prevents concurrent overselling)
         List<ProductCatalog> products = new ArrayList<>();
         for (OrderItemRequest itemReq : request.getItems()) {
-            ProductCatalog product = productCatalogRepository.findById(itemReq.getProductId())
+            ProductCatalog product = productCatalogRepository
+                    .findByIdWithLock(itemReq.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemReq.getProductId()));
             if (product.getQuantityInStock() == null) {
                 throw new BusinessException("Stock information unavailable for product: " + product.getProductName());

@@ -1,0 +1,16 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Development profile — activate with: --spring.profiles.active=dev
+# WARNING: These settings are UNSAFE for production. Never deploy with dev profile.
+# ─────────────────────────────────────────────────────────────────────────────
+
+spring:
+  datasource:
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    show-sql: true
+
+# Allows all endpoints to be called without a real Firebase token.
+# Customer identity is read from the X-Customer-Id request header.
+security:
+  insecure-test-mode: true

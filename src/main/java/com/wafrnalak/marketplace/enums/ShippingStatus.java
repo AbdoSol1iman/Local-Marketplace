@@ -1,8 +1,9 @@
 package com.wafrnalak.marketplace.enums;
 
 /**
- * Stored as smallint (ordinal) in the database:
- * 0 = PENDING, 1 = SHIPPED, 2 = IN_TRANSIT, 3 = DELIVERED, 4 = FAILED
+ * Shipping lifecycle states.
+ * Persisted as a VARCHAR(20) string column (EnumType.STRING) in the {@code shippings} table.
+ * Adding or reordering constants is safe — the stored string value never changes.
  */
 public enum ShippingStatus {
     PENDING,

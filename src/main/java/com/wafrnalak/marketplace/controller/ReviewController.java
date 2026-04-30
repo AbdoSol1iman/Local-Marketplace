@@ -1,5 +1,6 @@
 package com.wafrnalak.marketplace.controller;
 
+import com.wafrnalak.marketplace.auth.CustomerAuthContext;
 import com.wafrnalak.marketplace.dto.request.ReviewRequest;
 import com.wafrnalak.marketplace.dto.response.ApiResponse;
 import com.wafrnalak.marketplace.service.ReviewService;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,16 +22,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final CustomerAuthContext customerAuthContext;
 
     // -------------------------------------------------------------------------
-    // POST /api/reviews?customerId=  →  201 Created
+    // POST /api/reviews  →  201 Created
+    // Customer identity is derived from auth context (X-Customer-Id header in dev,
+    // Firebase token in prod).
     // -------------------------------------------------------------------------
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createReview(
-            @RequestParam Integer customerId,
             @RequestBody @Valid ReviewRequest request) {
 
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Review submitted",
@@ -63,14 +66,15 @@ public class ReviewController {
     }
 
     // -------------------------------------------------------------------------
-    // DELETE /api/reviews/{reviewId}?customerId=  →  204 No Content
+    // DELETE /api/reviews/{reviewId}  →  204 No Content
+    // Customer identity is derived from auth context, not from the request.
     // -------------------------------------------------------------------------
 
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(
-            @PathVariable Integer reviewId,
-            @RequestParam Integer customerId) {
+            @PathVariable Integer reviewId) {
 
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
         reviewService.deleteReview(reviewId, customerId);
         return ResponseEntity.noContent().build();
     }

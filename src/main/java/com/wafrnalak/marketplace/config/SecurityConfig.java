@@ -1,5 +1,6 @@
 package com.wafrnalak.marketplace.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,49 +15,63 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Security configuration.
  *
- * Current state: stateless, CSRF disabled, public read-only endpoints permitted.
- * All write/mutating endpoints are explicitly listed here and currently permitted
- * so the API is testable before Firebase auth is wired in.
+ * Default (production): stateless, CSRF disabled, deny-by-default.
+ * Only explicitly listed public endpoints are accessible without authentication.
+ *
+ * Dev mode (security.insecure-test-mode=true via application-dev.yml):
+ *   - All requests are permitted so the API is testable without a Firebase token.
+ *   - Customer identity is provided via the X-Customer-Id request header.
+ *   - NEVER enable this in any deployed environment.
  *
  * TODO (Firebase integration):
  *   1. Add a Firebase token verification filter before UsernamePasswordAuthenticationFilter.
- *   2. Change the write-endpoint matchers below from .permitAll() to .authenticated().
- *   3. Remove customerId from @RequestParam in controllers — derive it from the verified token.
+ *   2. Remove DevCustomerAuthContext and implement CustomerAuthContext using Firebase claims.
+ *   3. Remove X-Customer-Id header handling entirely.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Value("${security.insecure-test-mode:false}")
+    private boolean insecureTestMode;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
 
-                // ── Swagger / OpenAPI (always public) ──────────────────────
-                .requestMatchers(
+                // ── Always public: Swagger / OpenAPI ───────────────────────
+                auth.requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/api-docs/**"
-                ).permitAll()
+                ).permitAll();
 
-                // ── Auth (public) ───────────────────────────────────────────
-                .requestMatchers(HttpMethod.POST, "/api/customers/register").permitAll()
+                // ── Always public: registration ────────────────────────────
+                auth.requestMatchers(HttpMethod.POST, "/api/customers/register").permitAll();
 
-                // ── Public read-only endpoints ──────────────────────────────
-                .requestMatchers(HttpMethod.GET,
+                // ── Always public: read-only catalog endpoints ─────────────
+                auth.requestMatchers(HttpMethod.GET,
                     "/api/categories",
                     "/api/categories/**",
                     "/api/products",
                     "/api/products/**",
                     "/api/reviews/product/**"
-                ).permitAll()
+                ).permitAll();
 
-                // ── Everything else: should require authentication ──────────
-                // TODO: switch to .authenticated() once Firebase filter is in place
-                .anyRequest().permitAll()
-            );
+                // ── Everything else ────────────────────────────────────────
+                if (insecureTestMode) {
+                    // DEV ONLY: permit all remaining requests for local testing.
+                    // Gated behind security.insecure-test-mode=true (set only in application-dev.yml).
+                    auth.anyRequest().permitAll();
+                } else {
+                    // PRODUCTION default: deny unless authenticated.
+                    // TODO: wire Firebase token filter so this actually validates tokens.
+                    auth.anyRequest().authenticated();
+                }
+            });
 
         return http.build();
     }

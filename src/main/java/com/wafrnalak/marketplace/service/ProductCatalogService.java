@@ -107,26 +107,34 @@ public class ProductCatalogService {
     public PageResponse<ProductCatalogResponse> searchProducts(
             String name, Integer categoryId, int page, int size) {
 
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductCatalog> result;
+
         if (name != null && categoryId != null) {
-            List<ProductCatalog> list =
-                    productCatalogRepository
-                            .findByCategoryCategoryIdAndProductNameContainingIgnoreCase(categoryId, name);
-            return toListPageResponse(list);
+            result = productCatalogRepository
+                    .findByCategoryCategoryIdAndProductNameContainingIgnoreCase(categoryId, name, pageable);
+        } else if (name != null) {
+            result = productCatalogRepository
+                    .findByProductNameContainingIgnoreCase(name, pageable);
+        } else if (categoryId != null) {
+            result = productCatalogRepository
+                    .findByCategoryCategoryId(categoryId, pageable);
+        } else {
+            result = productCatalogRepository.findAll(pageable);
         }
 
-        if (name != null) {
-            List<ProductCatalog> list =
-                    productCatalogRepository.findByProductNameContainingIgnoreCase(name);
-            return toListPageResponse(list);
-        }
+        List<ProductCatalogResponse> content = result.getContent().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
 
-        if (categoryId != null) {
-            List<ProductCatalog> list =
-                    productCatalogRepository.findByCategoryCategoryId(categoryId);
-            return toListPageResponse(list);
-        }
-
-        return getAllProducts(page, size);
+        return PageResponse.<ProductCatalogResponse>builder()
+                .content(content)
+                .page(result.getNumber())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .last(result.isLast())
+                .build();
     }
 
     // -------------------------------------------------------------------------
@@ -177,7 +185,8 @@ public class ProductCatalogService {
         productImagesRepository.save(image);
 
         // Re-fetch to pick up the freshly persisted image in the collection
-        return toResponse(productCatalogRepository.findById(productId).get());
+        return toResponse(productCatalogRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId)));
     }
 
     public void removeImage(Integer productId, Integer imageId) {
@@ -236,22 +245,5 @@ public class ProductCatalogService {
                 .build();
     }
 
-    /**
-     * Wraps an already-loaded List result in a single-page {@link PageResponse}.
-     * Used for search queries that return a plain {@code List} rather than a {@code Page}.
-     */
-    private PageResponse<ProductCatalogResponse> toListPageResponse(List<ProductCatalog> list) {
-        List<ProductCatalogResponse> content = list.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
 
-        return PageResponse.<ProductCatalogResponse>builder()
-                .content(content)
-                .page(0)
-                .size(list.size())
-                .totalElements(list.size())
-                .totalPages(1)
-                .last(true)
-                .build();
-    }
 }

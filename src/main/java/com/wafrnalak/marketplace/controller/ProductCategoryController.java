@@ -61,12 +61,10 @@ public class ProductCategoryController {
 
     // DELETE /api/categories/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(
+    public ResponseEntity<Void> delete(
             @PathVariable Integer id) {
 
         categoryService.delete(id);
-        return ResponseEntity
-                .status(204)
-                .body(ApiResponse.success("Category deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

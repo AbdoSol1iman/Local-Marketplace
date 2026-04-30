@@ -33,8 +33,8 @@ public class Order {
     @Column(name = "total_amount", precision = 10, scale = 4)
     private BigDecimal totalAmount;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 

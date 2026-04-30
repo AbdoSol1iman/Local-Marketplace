@@ -29,8 +29,8 @@ public class Shipping {
     @Column(name = "tracking_number", length = 50)
     private String trackingNumber;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "shipping_status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shipping_status", length = 20)
     @Builder.Default
     private ShippingStatus shippingStatus = ShippingStatus.PENDING;
 

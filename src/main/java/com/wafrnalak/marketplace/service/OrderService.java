@@ -56,6 +56,9 @@ public class OrderService {
         for (OrderItemRequest itemReq : request.getItems()) {
             ProductCatalog product = productCatalogRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemReq.getProductId()));
+            if (product.getQuantityInStock() == null) {
+                throw new BusinessException("Stock information unavailable for product: " + product.getProductName());
+            }
             if (product.getQuantityInStock() < itemReq.getQuantity()) {
                 throw new BusinessException("Insufficient stock for product: " + product.getProductName());
             }
@@ -179,7 +182,9 @@ public class OrderService {
         for (OrderItem item : items) {
             ProductCatalog product = productCatalogRepository.findById(item.getId().getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product", "id", item.getId().getProductId()));
-            product.setQuantityInStock(product.getQuantityInStock() + item.getQuantity());
+            if (product.getQuantityInStock() != null) {
+                product.setQuantityInStock(product.getQuantityInStock() + item.getQuantity());
+            }
             productCatalogRepository.save(product);
         }
 

@@ -73,12 +73,10 @@ public class CustomerController {
 
     // DELETE /api/customers/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(
+    public ResponseEntity<Void> delete(
             @PathVariable Integer id) {
 
         customerService.delete(id);
-        return ResponseEntity
-                .status(204)
-                .body(ApiResponse.success("Customer deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

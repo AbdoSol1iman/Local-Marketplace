@@ -18,8 +18,12 @@ spring:
   application:
     name: wafrnalak-marketplace
 
+# JWT — will be activated when Firebase auth filter is wired in.
+# JWT_SECRET must be provided via environment variable — no default to prevent
+# insecure deployments. Minimum recommended length: 32 characters (256 bits).
+# Example: export JWT_SECRET=$(openssl rand -base64 32)
 jwt:
-  secret: ${JWT_SECRET:wafrnalak-super-secret-key-for-jwt-token-signing-must-be-at-least-256-bits}
+  secret: ${JWT_SECRET:}
   expiration: 86400000 # 24 hours in ms
 
 springdoc:

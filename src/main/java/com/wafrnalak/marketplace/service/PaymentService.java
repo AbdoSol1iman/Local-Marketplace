@@ -33,6 +33,19 @@ public class PaymentService {
             throw new BusinessException("Cannot process payment for a cancelled order");
         }
 
+        // Prevent duplicate payments for the same order
+        if (paymentRepository.findFirstByOrderOrderId(request.getOrderId()).isPresent()) {
+            throw new BusinessException("A payment has already been processed for this order");
+        }
+
+        // Validate amount matches the order total
+        if (order.getTotalAmount() != null &&
+                request.getAmount().compareTo(order.getTotalAmount()) != 0) {
+            throw new BusinessException(
+                "Payment amount (" + request.getAmount() +
+                ") does not match the order total (" + order.getTotalAmount() + ")");
+        }
+
         Payment payment = Payment.builder()
                 .order(order)
                 .amount(request.getAmount())

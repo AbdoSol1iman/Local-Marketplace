@@ -111,13 +111,11 @@ public class ProductCatalogController {
     // -------------------------------------------------------------------------
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> deleteProduct(
+    public ResponseEntity<Void> deleteProduct(
             @PathVariable Integer id) {
 
         productCatalogService.deleteProduct(id);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Product deleted", null));
+        return ResponseEntity.noContent().build();
     }
 
     // -------------------------------------------------------------------------
@@ -140,13 +138,11 @@ public class ProductCatalogController {
     // -------------------------------------------------------------------------
 
     @DeleteMapping("/{productId}/images/{imageId}")
-    public ResponseEntity<ApiResponse<?>> removeImage(
+    public ResponseEntity<Void> removeImage(
             @PathVariable Integer productId,
             @PathVariable Integer imageId) {
 
         productCatalogService.removeImage(productId, imageId);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Image removed", null));
+        return ResponseEntity.noContent().build();
     }
 }

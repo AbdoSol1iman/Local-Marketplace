@@ -67,13 +67,11 @@ public class ReviewController {
     // -------------------------------------------------------------------------
 
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<ApiResponse<?>> deleteReview(
+    public ResponseEntity<Void> deleteReview(
             @PathVariable Integer reviewId,
             @RequestParam Integer customerId) {
 
         reviewService.deleteReview(reviewId, customerId);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success("Review deleted", null));
+        return ResponseEntity.noContent().build();
     }
 }

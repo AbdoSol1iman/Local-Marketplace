@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+
+security:
+  insecure-test-mode: false
+
+app:
+  security:
+    public-docs-enabled: false

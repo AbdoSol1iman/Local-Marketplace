@@ -35,6 +35,9 @@ public class SecurityConfig {
     @Value("${security.insecure-test-mode:false}")
     private boolean insecureTestMode;
 
+    @Value("${app.security.public-docs-enabled:false}")
+    private boolean publicDocsEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -42,11 +45,19 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
 
-                // ── Always public: Swagger / OpenAPI ───────────────────────
+                if (publicDocsEnabled) {
+                    // Dev convenience only.
+                    auth.requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/api-docs/**"
+                    ).permitAll();
+                }
+
+                // ── Public health endpoints (for probes) ────────────────────
                 auth.requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/api-docs/**"
+                    "/actuator/health",
+                    "/actuator/health/**"
                 ).permitAll();
 
                 // ── Always public: registration ────────────────────────────

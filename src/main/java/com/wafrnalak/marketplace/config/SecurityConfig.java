@@ -62,6 +62,11 @@ public class SecurityConfig {
 
                 // ── Always public: registration ────────────────────────────
                 auth.requestMatchers(HttpMethod.POST, "/api/customers/register").permitAll();
+                auth.requestMatchers(HttpMethod.POST,
+                    "/api/auth/register",
+                    "/api/auth/login",
+                    "/api/auth/forgot-password"
+                ).permitAll();
 
                 // ── Always public: read-only catalog endpoints ─────────────
                 auth.requestMatchers(HttpMethod.GET,

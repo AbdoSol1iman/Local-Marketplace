@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -34,6 +37,7 @@ public class CustomerService {
                 .address(request.getAddress())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .blocked(false)
                 .build();
 
         Customer saved = customerRepository.save(customer);
@@ -91,6 +95,20 @@ public class CustomerService {
         customerRepository.delete(customer);
     }
 
+    public List<CustomerResponse> getAll() {
+        return customerRepository.findAll().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public CustomerResponse setBlocked(Integer customerId, boolean blocked) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
+        customer.setBlocked(blocked);
+        Customer saved = customerRepository.save(customer);
+        return toResponse(saved);
+    }
+
     private CustomerResponse toResponse(Customer customer) {
         return CustomerResponse.builder()
                 .customerId(customer.getCustomerId())
@@ -99,6 +117,7 @@ public class CustomerService {
                 .phone(customer.getPhone())
                 .address(customer.getAddress())
                 .username(customer.getUsername())
+                .blocked(Boolean.TRUE.equals(customer.getBlocked()))
                 .build();
     }
 }

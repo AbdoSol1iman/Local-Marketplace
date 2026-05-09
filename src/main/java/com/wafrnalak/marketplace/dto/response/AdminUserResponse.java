@@ -9,19 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CustomerResponse {
+public class AdminUserResponse {
 
     private Integer customerId;
 
     private String name;
 
     private String email;
-
-    private String phone;
-
-    private String address;
-
-    private String username;
 
     private Boolean blocked;
 }

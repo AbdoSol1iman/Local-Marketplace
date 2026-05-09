@@ -33,4 +33,8 @@ public class Customer {
 
     @Column(name = "password", nullable = false, length = 100)
     private String password;
+
+    @Column(name = "blocked", nullable = false)
+    @Builder.Default
+    private Boolean blocked = false;
 }

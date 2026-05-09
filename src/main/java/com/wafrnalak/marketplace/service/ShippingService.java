@@ -12,6 +12,8 @@ import com.wafrnalak.marketplace.repository.ShippingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ShippingService {
@@ -84,6 +86,21 @@ public class ShippingService {
     public ShippingResponse getShippingByOrder(Integer orderId) {
         Shipping shipping = shippingRepository.findByOrderOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping", "orderId", orderId));
+        return toResponse(shipping);
+    }
+
+    public ShippingResponse createPendingShippingForOrder(Integer orderId) {
+        Shipping shipping = shippingRepository.findByOrderOrderId(orderId)
+                .orElseGet(() -> {
+                    Order order = orderRepository.findById(orderId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+                    Shipping pending = Shipping.builder()
+                            .order(order)
+                            .shippingStatus(ShippingStatus.PENDING)
+                            .estimatedDeliveryDate(LocalDateTime.now().plusDays(2))
+                            .build();
+                    return shippingRepository.save(pending);
+                });
         return toResponse(shipping);
     }
 

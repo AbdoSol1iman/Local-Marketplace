@@ -24,3 +24,6 @@ security:
 app:
   security:
     public-docs-enabled: true
+
+jwt:
+  secret: ${JWT_SECRET:dev-only-insecure-jwt-secret-change-me-1234567890123456}

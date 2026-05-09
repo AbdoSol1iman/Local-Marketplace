@@ -69,6 +69,16 @@ public class OrderController {
     }
 
     // -------------------------------------------------------------------------
+    // GET /api/orders/me — All orders for currently authenticated customer
+    // -------------------------------------------------------------------------
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getMyOrders() {
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrdersByCustomer(customerId)));
+    }
+
+    // -------------------------------------------------------------------------
     // GET /api/orders/customer/{customerId}/status — Orders filtered by status
     // -------------------------------------------------------------------------
 
@@ -77,6 +87,18 @@ public class OrderController {
             @PathVariable Integer customerId,
             @RequestParam String status) {
 
+        return ResponseEntity.ok(
+                ApiResponse.success(orderService.getOrdersByCustomerAndStatus(customerId, status)));
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /api/orders/me/status — Current customer orders filtered by status
+    // -------------------------------------------------------------------------
+
+    @GetMapping("/me/status")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getMyOrdersByStatus(
+            @RequestParam String status) {
+        Integer customerId = customerAuthContext.getCurrentCustomerId();
         return ResponseEntity.ok(
                 ApiResponse.success(orderService.getOrdersByCustomerAndStatus(customerId, status)));
     }

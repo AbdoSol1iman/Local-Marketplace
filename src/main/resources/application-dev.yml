@@ -8,6 +8,8 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/wafrnalak_db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
   jpa:
     show-sql: true
 springdoc:

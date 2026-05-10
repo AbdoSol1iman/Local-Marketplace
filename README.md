@@ -22,3 +22,14 @@ Use `X-Customer-Id` header in dev mode (`spring.profiles.active=dev`) for custom
 | Profile | `GET /api/customers/me`, `PUT /api/customers/me`, `PUT /api/customers/me/password`, `DELETE /api/customers/me` |
 | Admin (stores) | `GET /api/admin/stores`, `POST /api/admin/stores`, `PUT /api/admin/stores/{storeId}/status?active=...`, `DELETE /api/admin/stores/{storeId}` |
 | Admin (users) | `GET /api/admin/users`, `PUT /api/admin/users/{customerId}/block?blocked=...`, `DELETE /api/admin/users/{customerId}` |
+
+## Dev fake data (UI integration)
+
+When running with `--spring.profiles.active=dev`, Flyway loads an additional seed migration (`db/dev/V3__seed_dev_sample_data.sql`) that inserts demo customers, categories, products, images, stores, cart items, orders, payments, shipping, and reviews.
+
+- Demo login users:
+  - `demo_buyer` / `password`
+  - `demo_family` / `password`
+- Blocked user for UI testing:
+  - `demo_blocked` / `password`
+- In dev mode, protected customer endpoints can also be tested with the `X-Customer-Id` header (for the seeded users, use IDs returned from `/api/admin/users`).
